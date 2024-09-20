@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Utility Functions for Further Exploration and Visualization</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Utility Functions for Further Exploration
+and Visualization</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(conversim)</span></code></pre></div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This vignette demonstrates the usage of utility functions for speech
+similarity analysis. These functions are designed to complement the main
+similarity calculation functions and provide additional tools for
+visualization and analysis.</p>
+</div>
+<div id="combining-similarity-measures" class="section level2">
+<h2>Combining Similarity Measures</h2>
+<p>The <code>combine_sims</code> function allows you to combine multiple
+similarity measures into a single score:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>sims <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">topic =</span> <span class="fl">0.8</span>, <span class="at">lexical =</span> <span class="fl">0.6</span>, <span class="at">semantic =</span> <span class="fl">0.7</span>, <span class="at">structural =</span> <span class="fl">0.9</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>combined_score <span class="ot">&lt;-</span> <span class="fu">combine_sims</span>(sims)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">print</span>(combined_score)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; [1] 0.75</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co"># With custom weights</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>weighted_score <span class="ot">&lt;-</span> <span class="fu">combine_sims</span>(sims, <span class="at">weights =</span> <span class="fu">list</span>(<span class="at">topic =</span> <span class="dv">2</span>, <span class="at">lexical =</span> <span class="dv">1</span>, <span class="at">semantic =</span> <span class="fl">1.5</span>, <span class="at">structural =</span> <span class="dv">1</span>))</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="fu">print</span>(weighted_score)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; [1] 0.7545455</span></span></code></pre></div>
+</div>
+<div id="visualizing-similarity-scores" class="section level2">
+<h2>Visualizing Similarity Scores</h2>
+<p>The <code>plot_sims</code> function creates a bar plot of similarity
+scores:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>sims <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">topic =</span> <span class="fl">0.8</span>, <span class="at">lexical =</span> <span class="fl">0.6</span>, <span class="at">semantic =</span> <span class="fl">0.7</span>, <span class="at">structural =</span> <span class="fl">0.9</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">plot_sims</span>(sims)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="comparing-stylistic-features" class="section level2">
+<h2>Comparing Stylistic Features</h2>
+<p>The <code>compare_style</code> function visualizes the comparison of
+stylistic features between two speeches:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Simulating the result of stylistic_similarity function</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>stylistic_result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">text1_features =</span> <span class="fu">list</span>(<span class="at">sentence_length =</span> <span class="dv">15</span>, <span class="at">word_length =</span> <span class="dv">5</span>, <span class="at">unique_words =</span> <span class="dv">100</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">text2_features =</span> <span class="fu">list</span>(<span class="at">sentence_length =</span> <span class="dv">12</span>, <span class="at">word_length =</span> <span class="dv">4</span>, <span class="at">unique_words =</span> <span class="dv">80</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">overall_similarity =</span> <span class="fl">0.85</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="fu">compare_style</span>(stylistic_result)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="generating-a-comprehensive-similarity-report" class="section level2">
+<h2>Generating a Comprehensive Similarity Report</h2>
+<p>The <code>gen_sim_report</code> function generates a comprehensive
+report of all similarity measures:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>speech1 <span class="ot">&lt;-</span> <span class="st">&quot;This is the first speech. It talks about important topics.&quot;</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>speech2 <span class="ot">&lt;-</span> <span class="st">&quot;This is the second speech. It covers similar subjects.&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># Note: This function call might not work as-is because it depends on other functions</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># that are not defined in the utility files. For demonstration purposes, we&#39;ll create</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co"># a mock report.</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>mock_report <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="at">similarities =</span> <span class="fu">list</span>(</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>    <span class="at">topic =</span> <span class="fl">0.8</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>    <span class="at">lexical =</span> <span class="fl">0.6</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>    <span class="at">semantic =</span> <span class="fl">0.7</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>    <span class="at">structural =</span> <span class="fl">0.9</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>    <span class="at">stylistic =</span> <span class="fl">0.85</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>    <span class="at">sentiment =</span> <span class="fl">0.75</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>  ),</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  <span class="at">combined_similarity =</span> <span class="fl">0.75</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>  <span class="at">similarity_plot =</span> <span class="fu">plot_sims</span>(<span class="fu">list</span>(<span class="at">topic =</span> <span class="fl">0.8</span>, <span class="at">lexical =</span> <span class="fl">0.6</span>, <span class="at">semantic =</span> <span class="fl">0.7</span>, <span class="at">structural =</span> <span class="fl">0.9</span>)),</span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>  <span class="at">stylistic_plot =</span> <span class="fu">compare_style</span>(stylistic_result)</span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>)</span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co"># Print the mock report</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="fu">print_sim_report</span>(mock_report)</span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt; Similarity Report</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt; =================</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt; Individual Similarity Scores:</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt;   topic: 0.8000</span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a><span class="co">#&gt;   lexical: 0.6000</span></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co">#&gt;   semantic: 0.7000</span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co">#&gt;   structural: 0.9000</span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt;   stylistic: 0.8500</span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a><span class="co">#&gt;   sentiment: 0.7500</span></span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="co">#&gt; Combined Similarity Score: %.4f</span></span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a><span class="co">#&gt;  0.75</span></span>
+<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a><span class="co">#&gt; Plots have been generated for overall similarities and stylistic features.</span></span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a><span class="co">#&gt; Use &#39;report$similarity_plot&#39; and &#39;report$stylistic_plot&#39; to view them.</span></span></code></pre></div>
+</div>
+<div id="working-with-conversation-sequences" class="section level2">
+<h2>Working with Conversation Sequences</h2>
+<p>The <code>conversation_sequence_utilities.R</code> file provides
+functions for analyzing similarity sequences in conversations:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Combine similarity measures for a single dyad</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>sim1 <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">sequence =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">0.7</span>, <span class="fl">0.9</span>), <span class="at">average =</span> <span class="fl">0.8</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>sim2 <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">sequence =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.8</span>, <span class="fl">0.7</span>), <span class="at">average =</span> <span class="fl">0.7</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>combined <span class="ot">&lt;-</span> <span class="fu">combine_sim_seq</span>(<span class="fu">list</span>(sim1, sim2))</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="fu">print</span>(combined)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; $sequence</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; [1] 0.70 0.75 0.80</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; $average</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; [1] 0.75</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co"># Normalize similarity scores</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>scores <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">0.8</span>, <span class="fl">1.0</span>, <span class="fl">0.3</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>normalized <span class="ot">&lt;-</span> <span class="fu">norm_sim</span>(scores)</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="fu">print</span>(normalized)</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; [1] 0.000 0.375 0.750 1.000 0.125</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co"># Aggregate similarity sequence</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>seq <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.6</span>, <span class="fl">0.8</span>, <span class="fl">0.7</span>, <span class="fl">0.9</span>, <span class="fl">0.8</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>aggregated <span class="ot">&lt;-</span> <span class="fu">agg_seq</span>(seq, <span class="dv">3</span>)</span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="fu">print</span>(aggregated)</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt; [1] 0.60 0.80 0.75</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co"># Calculate correlation between similarity measures</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor_sim_seq</span>(<span class="fu">list</span>(sim1, sim2))</span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="fu">print</span>(cor_matrix)</span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt;      [,1] [,2]</span></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt; [1,]  1.0 -0.5</span></span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt; [2,] -0.5  1.0</span></span></code></pre></div>
+</div>
+<div id="analyzing-multiple-dyads" class="section level2">
+<h2>Analyzing Multiple Dyads</h2>
+<p>The conversation_multidyads_utilities.R file provides functions for
+analyzing similarities across multiple dyads:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Create mock data for multiple dyads</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>similarities <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="st">&quot;1&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="st">&quot;2&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.6</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co"># Plot similarity over time for multiple dyads</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="fu">plot_sim_time</span>(similarities, <span class="st">&quot;Topic Similarity&quot;</span>, <span class="st">&quot;Similarity Score&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co"># Calculate summary statistics</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>stats <span class="ot">&lt;-</span> <span class="fu">calc_sum_stats</span>(similarities)</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="fu">print</span>(stats)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt;   mean  sd min max</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; 1  0.6 0.1 0.5 0.7</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; 2  0.5 0.1 0.4 0.6</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co"># Plot summary statistics</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="fu">plot_sum_stats</span>(stats, <span class="st">&quot;Summary Statistics of Similarities&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co"># Compare multiple similarity measures</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>topic_similarities <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">&quot;1&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>), <span class="st">&quot;2&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.6</span>))</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>lexical_similarities <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">&quot;1&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.8</span>), <span class="st">&quot;2&quot;</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>))</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>comparison_df <span class="ot">&lt;-</span> <span class="fu">compare_sim_meas</span>(</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="fu">list</span>(topic_similarities, lexical_similarities),</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;Topic&quot;</span>, <span class="st">&quot;Lexical&quot;</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">head</span>(comparison_df))</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt;   dyad Topic Lexical</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; 1    1   0.5     0.6</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; 2    1   0.6     0.7</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; 3    1   0.7     0.8</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; 4    2   0.4     0.5</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; 5    2   0.5     0.6</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; 6    2   0.6     0.7</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co"># Plot comparison of multiple similarity measures</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="fu">plot_sim_comp</span>(comparison_df, <span class="st">&quot;Comparison of Similarity Measures&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>This vignette has demonstrated the usage of various utility functions
+for speech similarity analysis. These functions provide powerful tools
+for combining, visualizing, and analyzing similarity measures across
+different aspects of speech and conversation dynamics.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

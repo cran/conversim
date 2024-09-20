@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Analyzing Similarities between Two Long Speeches</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Analyzing Similarities between Two Long
+Speeches</h1>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This vignette demonstrates the usage of various similarity functions
+for analyzing speeches. We’ll be using example data
+<code>speeches_data</code> stored in <code>inst/extdata</code> to
+showcase these functions.</p>
+<p>First, let’s load the example data:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>data_path <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;speeches_data.Rdata&quot;</span>, <span class="at">package =</span> <span class="st">&quot;conversim&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">load</span>(data_path)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># Print a summary of the speeches data</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">summary</span>(speeches_data))</span></code></pre></div>
+<pre><code>##   speaker_id            text          
+##  Length:2           Length:2          
+##  Class :character   Class :character  
+##  Mode  :character   Mode  :character</code></pre>
+<div id="preprocessing-text" class="section level2">
+<h2>Preprocessing Text</h2>
+<p>Before we begin with the similarity functions, let’s look at the
+<code>preprocess_text</code> function:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Example usage with our data</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>original_text <span class="ot">&lt;-</span> <span class="fu">substr</span>(speeches_data<span class="sc">$</span>text[<span class="dv">1</span>], <span class="dv">1</span>, <span class="dv">200</span>)  <span class="co"># First 200 characters of speech A</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>preprocessed_text <span class="ot">&lt;-</span> <span class="fu">preprocess_text</span>(original_text)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Original:&quot;</span>, original_text))</span></code></pre></div>
+<pre><code>## [1] &quot;Original: Ladies and Gentlemen, Distinguished Guests,\n\nToday, I stand before you to address one of the most pressing challenges of our time—climate change. What was once a distant concern is now an undeniable r&quot;</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Preprocessed:&quot;</span>, preprocessed_text))</span></code></pre></div>
+<pre><code>## [1] &quot;Preprocessed: ladies and gentlemen distinguished guests today i stand before you to address one of the most pressing challenges of our timeclimate change what was once a distant concern is now an undeniable r&quot;</code></pre>
+</div>
+<div id="topic-similarity" class="section level2">
+<h2>Topic Similarity</h2>
+<p>The <code>topic_similarity</code> function calculates the similarity
+between two speeches based on their topics:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Example usage with our speeches data</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>lda_similarity <span class="ot">&lt;-</span> <span class="fu">topic_similarity</span>(speeches_data<span class="sc">$</span>text[<span class="dv">1</span>], speeches_data<span class="sc">$</span>text[<span class="dv">2</span>], <span class="at">method =</span> <span class="st">&quot;lda&quot;</span>, <span class="at">num_topics =</span> <span class="dv">5</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>lsa_similarity <span class="ot">&lt;-</span> <span class="fu">topic_similarity</span>(speeches_data<span class="sc">$</span>text[<span class="dv">1</span>], speeches_data<span class="sc">$</span>text[<span class="dv">2</span>], <span class="at">method =</span> <span class="st">&quot;lsa&quot;</span>, <span class="at">num_topics =</span> <span class="dv">5</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;LDA Similarity:&quot;</span>, lda_similarity))</span></code></pre></div>
+<pre><code>## [1] &quot;LDA Similarity: 0.169419269706043&quot;</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;LSA Similarity:&quot;</span>, lsa_similarity))</span></code></pre></div>
+<pre><code>## [1] &quot;LSA Similarity: 1&quot;</code></pre>
+<p><strong>Note</strong>: The difference between LDA (Latent Dirichlet
+Allocation) topic similarity (0.1694) and LSA (Latent Semantic Analysis)
+topic similarity (1) can be attributed to several factors:</p>
+<div id="different-algorithms" class="section level3">
+<h3>1. Different Algorithms</h3>
+<p>LDA and LSA use fundamentally different approaches for topic modeling
+and semantic analysis:</p>
+<ul>
+<li><strong>LDA</strong> is a probabilistic model that assumes documents
+are mixtures of topics, and topics are mixtures of words. It aims to
+reverse-engineer the underlying topic structure that could have
+generated the observed documents.</li>
+<li><strong>LSA</strong>, by contrast, relies on singular value
+decomposition (SVD) of the term-document matrix, reducing its
+dimensionality to uncover latent semantic structures.</li>
+</ul>
+</div>
+<div id="possible-reasons-for-lsas-high-similarity-score" class="section level3">
+<h3>2. Possible Reasons for LSA’s High Similarity Score</h3>
+<ul>
+<li><strong>Dimensionality</strong>: If too few topics (dimensions) were
+chosen for LSA, the semantic space might have been oversimplified,
+leading to an artificially high similarity score.</li>
+<li><strong>Corpus Size</strong>: LSA can be sensitive to the size of
+the corpus. With only two documents, there may not be enough data for
+LSA to create a meaningful semantic space.</li>
+<li><strong>Common Vocabulary</strong>: Both speeches discuss climate
+change, and the use of similar high-level vocabulary could lead LSA to
+treat them as highly similar, especially in a small corpus.</li>
+<li><strong>Implementation Issue</strong>: There could be a problem with
+how cosine similarity was calculated or normalized in the LSA
+implementation.</li>
+</ul>
+</div>
+<div id="sensitivity-to-input-parameters" class="section level3">
+<h3>3. Sensitivity to Input Parameters</h3>
+<p>Both LDA and LSA are sensitive to the input parameters, especially
+the number of topics chosen. The code used five topics for both methods,
+which may have been more appropriate for LDA than for LSA in this
+particular case.</p>
+</div>
+<div id="nature-of-the-data" class="section level3">
+<h3>4. Nature of the Data</h3>
+<p>Although both speeches are about climate change, they focus on
+different aspects of the topic. LDA might be better suited to capture
+these nuanced differences in topic distribution, whereas LSA may
+oversimplify the analysis due to the shared overall theme and
+vocabulary.</p>
+</div>
+</div>
+<div id="lexical-similarity" class="section level2">
+<h2>Lexical Similarity</h2>
+<p>The <code>lexical_similarity</code> function calculates the
+similarity between two speeches based on their shared unique words:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Example usage with our speeches data</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>lex_similarity <span class="ot">&lt;-</span> <span class="fu">lexical_similarity</span>(speeches_data<span class="sc">$</span>text[<span class="dv">1</span>], speeches_data<span class="sc">$</span>text[<span class="dv">2</span>])</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Lexical Similarity:&quot;</span>, lex_similarity))</span></code></pre></div>
+<pre><code>## [1] &quot;Lexical Similarity: 0.15180265654649&quot;</code></pre>
+</div>
+<div id="semantic-similarity" class="section level2">
+<h2>Semantic Similarity</h2>
+<p>The <code>semantic_similarity</code> function calculates the semantic
+similarity between two speeches using different methods:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Example usage with our speeches data</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>tfidf_similarity <span class="ot">&lt;-</span> <span class="fu">semantic_similarity</span>(speeches_data<span class="sc">$</span>text[<span class="dv">1</span>], speeches_data<span class="sc">$</span>text[<span class="dv">2</span>], <span class="at">method =</span> <span class="st">&quot;tfidf&quot;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>word2vec_similarity <span class="ot">&lt;-</span> <span class="fu">semantic_similarity</span>(speeches_data<span class="sc">$</span>text[<span class="dv">1</span>], speeches_data<span class="sc">$</span>text[<span class="dv">2</span>], <span class="at">method =</span> <span class="st">&quot;word2vec&quot;</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;TF-IDF Similarity:&quot;</span>, tfidf_similarity))</span></code></pre></div>
+<pre><code>## [1] &quot;TF-IDF Similarity: 0.5&quot;</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Word2Vec Similarity:&quot;</span>, word2vec_similarity))</span></code></pre></div>
+<pre><code>## [1] &quot;Word2Vec Similarity: 0.998952039779365&quot;</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># Note: For GloVe method, you need to provide a path to pre-trained GloVe vectors</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="co"># glove_similarity &lt;- semantic_similarity(speeches_data$text[1], speeches_data$text[2], method = &quot;glove&quot;, model_path = &quot;path/to/glove/vectors.txt&quot;)</span></span></code></pre></div>
+</div>
+<div id="structural-similarity" class="section level2">
+<h2>Structural Similarity</h2>
+<p>The <code>structural_similarity</code> function calculates the
+similarity between two speeches based on their structure:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># Example usage with our speeches data</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>struct_similarity <span class="ot">&lt;-</span> <span class="fu">structural_similarity</span>(<span class="fu">strsplit</span>(speeches_data<span class="sc">$</span>text[<span class="dv">1</span>], <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)[[<span class="dv">1</span>]], </span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>                                           <span class="fu">strsplit</span>(speeches_data<span class="sc">$</span>text[<span class="dv">2</span>], <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)[[<span class="dv">1</span>]])</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Structural Similarity:&quot;</span>, struct_similarity))</span></code></pre></div>
+<pre><code>## [1] &quot;Structural Similarity: 0.889420039965884&quot;</code></pre>
+</div>
+<div id="stylistic-similarity" class="section level2">
+<h2>Stylistic Similarity</h2>
+<p>The <code>stylistic_similarity</code> function calculates various
+stylistic features and their similarity between two speeches:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># Example usage with our speeches data</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>style_similarity <span class="ot">&lt;-</span> <span class="fu">stylistic_similarity</span>(speeches_data<span class="sc">$</span>text[<span class="dv">1</span>], speeches_data<span class="sc">$</span>text[<span class="dv">2</span>])</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&quot;Stylistic Similarity Results:&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;Stylistic Similarity Results:&quot;</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">print</span>(style_similarity)</span></code></pre></div>
+<pre><code>## $text1_features
+##                 ttr avg_sentence_length            fk_grade 
+##            0.644186           23.888889           19.878760 
+## 
+## $text2_features
+##                 ttr avg_sentence_length            fk_grade 
+##           0.5490849          23.1153846          17.0446339 
+## 
+## $feature_differences
+##                 ttr avg_sentence_length            fk_grade 
+##          0.09510119          0.77350427          2.83412575 
+## 
+## $overall_similarity
+## [1] 0.8924734
+## 
+## $cosine_similarity
+## [1] 0.9949162</code></pre>
+</div>
+<div id="sentiment-similarity" class="section level2">
+<h2>Sentiment Similarity</h2>
+<p>The <code>sentiment_similarity</code> function calculates the
+sentiment similarity between two speeches:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="co"># Example usage with our speeches data</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>sent_similarity <span class="ot">&lt;-</span> <span class="fu">sentiment_similarity</span>(speeches_data<span class="sc">$</span>text[<span class="dv">1</span>], speeches_data<span class="sc">$</span>text[<span class="dv">2</span>])</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Sentiment Similarity:&quot;</span>, sent_similarity))</span></code></pre></div>
+<pre><code>## [1] &quot;Sentiment Similarity: 0.952602694643716&quot;</code></pre>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>This vignette has demonstrated the usage of various similarity
+functions for analyzing speeches using the provided
+<code>speeches_data.Rdata</code>. These functions can be used
+individually or combined to create a comprehensive similarity analysis
+between different speeches in your dataset.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

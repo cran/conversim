@@ -1,0 +1,529 @@
+## ----include = FALSE----------------------------------------------------------
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+## ----echo=FALSE, message=FALSE------------------------------------------------
+library(lme4)
+library(ggplot2)
+library(topicmodels)
+library(tm)
+library(slam)
+
+## ----message=FALSE------------------------------------------------------------
+library(conversim)
+
+## ----load_data----------------------------------------------------------------
+data_path <- system.file("extdata", "dyad_example_data.Rdata", package = "conversim")
+load(data_path)
+
+# Display the first few rows and structure of the data
+head(dyad_example_data)
+str(dyad_example_data)
+
+## ----echo=FALSE---------------------------------------------------------------
+preprocess_dyads <- function(conversations) {
+  conversations$processed_text <- sapply(conversations$text, function(text) {
+    text <- tolower(text)
+    text <- gsub("[[:punct:]]", "", text)
+    text <- gsub("[[:digit:]]", "", text)
+    text <- gsub("\\s+", " ", trimws(text))
+    return(text)
+  })
+
+  # Remove empty processed texts
+  conversations <- conversations[nchar(conversations$processed_text) > 0, ]
+
+  return(conversations)
+}
+
+## ----preprocess---------------------------------------------------------------
+processed_convs <- preprocess_dyads(dyad_example_data)
+head(dyad_example_data)
+
+## ----echo=FALSE---------------------------------------------------------------
+topic_sim_dyads <- function(conversations, method = "lda", num_topics = 2, window_size = 3) {
+  if (!requireNamespace("lme4", quietly = TRUE)) {
+    stop("Package 'lme4' is required for this function. Please install it.")
+  }
+
+  if (!requireNamespace("topicmodels", quietly = TRUE)) {
+    stop("Package 'topicmodels' is required for this function. Please install it.")
+  }
+
+  if (!requireNamespace("tm", quietly = TRUE)) {
+    stop("Package 'tm' is required for this function. Please install it.")
+  }
+
+  if (!requireNamespace("slam", quietly = TRUE)) {
+    stop("Package 'slam' is required for this function. Please install it.")
+  }
+
+  dyads <- unique(conversations$dyad_id)
+  all_similarities <- list()
+
+  for (dyad in dyads) {
+    dyad_conv <- conversations[conversations$dyad_id == dyad, ]
+    similarities <- c()
+    for (i in 1:(nrow(dyad_conv) - window_size + 1)) {
+      window <- dyad_conv$processed_text[i:(i+window_size-1)]
+
+      # Create a document-term matrix
+      corpus <- tm::Corpus(tm::VectorSource(window))
+      dtm <- tm::DocumentTermMatrix(corpus)
+
+      # Check if the DTM is empty or has any empty documents using slam
+      if (sum(slam::col_sums(dtm) > 0) == 0) {
+        similarities <- c(similarities, NA)
+        next
+      }
+
+      # Remove empty documents using slam
+      dtm <- dtm[slam::row_sums(dtm) > 0, ]
+
+      if (method == "lda") {
+        tryCatch({
+          lda_model <- topicmodels::LDA(dtm, k = num_topics, control = list(seed = 1234))
+          topics <- topicmodels::topics(lda_model)
+          sim <- sum(topics[1:(window_size/2)] == topics[(window_size/2+1):window_size]) / (window_size/2)
+        }, error = function(e) {
+          sim <- NA
+        })
+      } else {
+        stop("Unsupported method. Only 'lda' is currently implemented.")
+      }
+      similarities <- c(similarities, sim)
+    }
+    all_similarities[[as.character(dyad)]] <- similarities
+  }
+
+  # Prepare data for multilevel modeling
+  model_data <- data.frame(
+    dyad_id = rep(dyads, sapply(all_similarities, length)),
+    similarity = unlist(all_similarities)
+  )
+
+  # Remove NA values
+  model_data <- model_data[!is.na(model_data$similarity), ]
+
+  # Fit multilevel model
+  model <- lme4::lmer(similarity ~ 1 + (1|dyad_id), data = model_data)
+
+  # Extract overall average similarity accounting for dyad-level variation
+  overall_average <- lme4::fixef(model)[1]
+
+  return(list(similarities_by_dyad = all_similarities, overall_average = overall_average))
+}
+
+## ----topic_similarity, message=FALSE------------------------------------------
+topic_sim <- topic_sim_dyads(processed_convs, method = "lda", num_topics = 5, window_size = 3)
+
+## ----echo=FALSE---------------------------------------------------------------
+lexical_sim_dyads <- function(conversations, window_size = 3) {
+
+  dyads <- unique(conversations$dyad_id)
+  all_similarities <- list()
+
+  for (dyad in dyads) {
+    dyad_conv <- conversations[conversations$dyad_id == dyad, ]
+    similarities <- c()
+    for (i in 1:(nrow(dyad_conv) - window_size + 1)) {
+      window1 <- paste(dyad_conv$processed_text[i:(i+window_size/2-1)], collapse = " ")
+      window2 <- paste(dyad_conv$processed_text[(i+window_size/2):(i+window_size-1)], collapse = " ")
+      sim <- conversim::lexical_similarity(window1, window2)
+      similarities <- c(similarities, sim)
+    }
+    all_similarities[[as.character(dyad)]] <- similarities
+  }
+
+  # Prepare data for multilevel modeling
+  model_data <- data.frame(
+    dyad_id = rep(dyads, sapply(all_similarities, length)),
+    similarity = unlist(all_similarities)
+  )
+
+  # Fit multilevel model
+  model <- lme4::lmer(similarity ~ 1 + (1|dyad_id), data = model_data)
+
+  # Extract overall average similarity accounting for dyad-level variation
+  overall_average <- fixef(model)[1]
+
+  return(list(similarities_by_dyad = all_similarities, overall_average = overall_average))
+}
+
+## ----lexical_similarity, message=FALSE----------------------------------------
+lexical_sim <- lexical_sim_dyads(processed_convs, window_size = 3)
+
+## ----echo=FALSE---------------------------------------------------------------
+semantic_similarity <- function(conversation1, conversation2, method = "tfidf", model_path = NULL, dim = 100, window = 5, iter = 5) {
+  # Internal function to calculate cosine similarity
+  cosine_similarity <- function(a, b) {
+    if (length(a) == 0 || length(b) == 0) return(0)
+    sim <- sum(a * b) / (sqrt(sum(a^2)) * sqrt(sum(b^2)))
+    # Ensure the result is between 0 and 1
+    return((sim + 1) / 2)
+  }
+
+  # Internal function to load pre-trained GloVe embeddings
+  load_glove <- function(file_path) {
+    tryCatch({
+      conn <- file(file_path, "r")
+      lines <- readLines(conn)
+      close(conn)
+      split_lines <- strsplit(lines, " ")
+      words <- sapply(split_lines, `[`, 1)
+      vectors <- t(sapply(split_lines, function(x) as.numeric(x[-1])))
+      rownames(vectors) <- words
+      return(vectors)
+    }, error = function(e) {
+      stop(paste("Error loading GloVe file:", e$message))
+    })
+  }
+
+  # Internal function to calculate sentence embedding
+  sentence_embedding <- function(sentence, word_vectors) {
+    tokens <- unlist(strsplit(sentence, "\\s+"))
+    valid_tokens <- tokens[tokens %in% rownames(word_vectors)]
+    if (length(valid_tokens) == 0) {
+      return(rep(0, ncol(word_vectors)))
+    }
+    embeddings <- word_vectors[valid_tokens, , drop = FALSE]
+    if (nrow(embeddings) == 0) return(rep(0, ncol(word_vectors)))
+    return(colMeans(embeddings))
+  }
+
+  if (method == "tfidf") {
+    # TF-IDF approach
+    corpus <- c(conversation1, conversation2)
+    dtm <- DocumentTermMatrix(Corpus(VectorSource(corpus)))
+    tfidf <- weightTfIdf(dtm)
+    m <- as.matrix(tfidf)
+
+    # Issue a warning for short conversations or little vocabulary overlap
+    if (nchar(conversation1) < 50 || nchar(conversation2) < 50 || ncol(m) < 5) {
+      warning("The 'tfidf' method may not provide highly meaningful results for short conversations or those with little vocabulary overlap. Consider using 'word2vec' or 'glove' methods for more robust results.")
+    }
+
+    # If the conversations are identical, return 1
+    if (identical(conversation1, conversation2)) {
+      return(1)
+    }
+    # Ensure we have at least one term in common
+    if (ncol(m) == 0) {
+      return(0)
+    }
+    # Calculate cosine similarity
+    similarity <- cosine_similarity(m[1,], m[2,])
+
+  } else if (method == "word2vec" || method == "glove") {
+    # Word2Vec or GloVe approach
+    if (method == "word2vec") {
+      # Train Word2Vec model
+      all_text <- c(conversation1, conversation2)
+      model <- word2vec(x = all_text, dim = dim, iter = iter, window = window, min_count = 1)
+      word_vectors <- as.matrix(model)
+    } else { # method == "glove"
+      if (is.null(model_path)) {
+        stop("Please provide a path to the pre-trained GloVe file.")
+      }
+      # Load pre-trained GloVe vectors
+      word_vectors <- load_glove(model_path)
+    }
+
+    # Calculate embeddings for each conversation
+    embedding1 <- sentence_embedding(conversation1, word_vectors)
+    embedding2 <- sentence_embedding(conversation2, word_vectors)
+
+    # Calculate cosine similarity
+    similarity <- cosine_similarity(embedding1, embedding2)
+  } else {
+    stop("Invalid method. Choose 'tfidf', 'word2vec', or 'glove'.")
+  }
+
+  return(similarity)
+}
+
+semantic_sim_dyads <- function(conversations, method = "tfidf", window_size = 3, ...) {
+
+  dyads <- unique(conversations$dyad_id)
+  all_similarities <- list()
+
+  for (dyad in dyads) {
+    dyad_conv <- conversations[conversations$dyad_id == dyad, ]
+    similarities <- c()
+    for (i in 1:(nrow(dyad_conv) - window_size + 1)) {
+      window1 <- paste(dyad_conv$processed_text[i:(i+window_size/2-1)], collapse = " ")
+      window2 <- paste(dyad_conv$processed_text[(i+window_size/2):(i+window_size-1)], collapse = " ")
+      sim <- semantic_similarity(window1, window2, method, ...)
+      similarities <- c(similarities, sim)
+    }
+    all_similarities[[as.character(dyad)]] <- similarities
+  }
+
+  # Prepare data for multilevel modeling
+  model_data <- data.frame(
+    dyad_id = rep(dyads, sapply(all_similarities, length)),
+    similarity = unlist(all_similarities)
+  )
+
+  # Fit multilevel model
+  model <- lme4::lmer(similarity ~ 1 + (1|dyad_id), data = model_data)
+
+  # Extract overall average similarity accounting for dyad-level variation
+  overall_average <- fixef(model)[1]
+
+  return(list(similarities_by_dyad = all_similarities, overall_average = overall_average))
+}
+
+## ----semantic_similarity, message=FALSE, , warning=FALSE, results='hide'------
+semantic_sim <- semantic_sim_dyads(processed_convs, method = "tfidf", window_size = 3)
+
+## ----echo=FALSE---------------------------------------------------------------
+structural_sim_dyads <- function(conversations) {
+  dyads <- unique(conversations$dyad_id)
+  all_similarities <- list()
+
+  for (dyad in dyads) {
+    dyad_conv <- conversations[conversations$dyad_id == dyad, ]
+
+    length_sim <- 1
+    turn_lengths <- nchar(dyad_conv$processed_text)
+    turn_length_sim <- 1 - sd(turn_lengths) / mean(turn_lengths)
+
+    speaker_changes <- sum(dyad_conv$speaker[-1] != dyad_conv$speaker[-nrow(dyad_conv)])
+    speaker_change_sim <- 1 - abs(speaker_changes - (nrow(dyad_conv) / 2)) / (nrow(dyad_conv) / 2)
+
+    similarity <- mean(c(length_sim, turn_length_sim, speaker_change_sim))
+    all_similarities[[as.character(dyad)]] <- similarity
+  }
+
+  # Calculate overall average using simple mean
+  overall_average <- mean(unlist(all_similarities))
+
+  # Print warning about not using multilevel modeling
+  warning("Only one observation per dyad. Using simple mean for overall average instead of multilevel modeling.")
+
+  return(list(similarities_by_dyad = all_similarities, overall_average = overall_average))
+}
+
+## ----structural_similarity, message=FALSE, warning=FALSE----------------------
+structural_sim <- structural_sim_dyads(processed_convs)
+
+## ----echo=FALSE---------------------------------------------------------------
+stylistic_similarity <- function(text1, text2) {
+  # Helper function to calculate features for a single text
+  calculate_features <- function(text) {
+    words <- strsplit(text, " ")[[1]]
+    sentences <- strsplit(text, "\\. ")[[1]]
+
+    ttr <- length(unique(words)) / length(words)
+    avg_sentence_length <- mean(sapply(sentences, function(s) length(strsplit(s, " ")[[1]])))
+    syllables <- sum(sapply(words, function(w) max(1, nchar(gsub("[^aeiouAEIOU]", "", w)))))
+    fk_grade <- 0.39 * (length(words) / length(sentences)) + 11.8 * (syllables / length(words)) - 15.59
+
+    c(ttr = ttr, avg_sentence_length = avg_sentence_length, fk_grade = fk_grade)
+  }
+
+  features1 <- calculate_features(text1)
+  features2 <- calculate_features(text2)
+  feature_diff <- abs(features1 - features2)
+  overall_similarity <- 1 - mean(feature_diff / pmax(features1, features2))
+
+  normalized1 <- (features1 - mean(features1)) / sd(features1)
+  normalized2 <- (features2 - mean(features2)) / sd(features2)
+  cosine_similarity <- sum(normalized1 * normalized2) /
+    (sqrt(sum(normalized1^2)) * sqrt(sum(normalized2^2)))
+
+  list(
+    text1_features = features1,
+    text2_features = features2,
+    feature_differences = feature_diff,
+    overall_similarity = overall_similarity,
+    cosine_similarity = cosine_similarity
+  )
+}
+
+stylistic_sim_dyads <- function(conversations, window_size = 3) {
+
+  dyads <- unique(conversations$dyad_id)
+  all_similarities <- list()
+
+  for (dyad in dyads) {
+    dyad_conv <- conversations[conversations$dyad_id == dyad, ]
+    similarities <- c()
+    for (i in 1:(nrow(dyad_conv) - window_size + 1)) {
+      window1 <- paste(dyad_conv$processed_text[i:(i+window_size/2-1)], collapse = " ")
+      window2 <- paste(dyad_conv$processed_text[(i+window_size/2):(i+window_size-1)], collapse = " ")
+      sim <- stylistic_similarity(window1, window2)$overall_similarity
+      similarities <- c(similarities, sim)
+    }
+    all_similarities[[as.character(dyad)]] <- similarities
+  }
+
+  # Prepare data for multilevel modeling
+  model_data <- data.frame(
+    dyad_id = rep(dyads, sapply(all_similarities, length)),
+    similarity = unlist(all_similarities)
+  )
+
+  # Fit multilevel model
+  model <- lme4::lmer(similarity ~ 1 + (1|dyad_id), data = model_data)
+
+  # Extract overall average similarity accounting for dyad-level variation
+  overall_average <- fixef(model)[1]
+
+  return(list(similarities_by_dyad = all_similarities, overall_average = overall_average))
+}
+
+## ----stylistic_similarity, message=FALSE--------------------------------------
+stylistic_sim <- stylistic_sim_dyads(processed_convs, window_size = 3)
+
+## ----echo=FALSE---------------------------------------------------------------
+sentiment_sim_dyads <- function(conversations, window_size = 3) {
+
+  dyads <- unique(conversations$dyad_id)
+  all_similarities <- list()
+
+  for (dyad in dyads) {
+    dyad_conv <- conversations[conversations$dyad_id == dyad, ]
+    similarities <- c()
+    for (i in 1:(nrow(dyad_conv) - window_size + 1)) {
+      window1 <- paste(dyad_conv$processed_text[i:(i+window_size/2-1)], collapse = " ")
+      window2 <- paste(dyad_conv$processed_text[(i+window_size/2):(i+window_size-1)], collapse = " ")
+      sim <- conversim::sentiment_similarity(window1, window2)
+      similarities <- c(similarities, sim)
+    }
+    all_similarities[[as.character(dyad)]] <- similarities
+  }
+
+  # Prepare data for multilevel modeling
+  model_data <- data.frame(
+    dyad_id = rep(dyads, sapply(all_similarities, length)),
+    similarity = unlist(all_similarities)
+  )
+
+  # Fit multilevel model
+  model <- lme4::lmer(similarity ~ 1 + (1|dyad_id), data = model_data)
+
+  # Extract overall average similarity accounting for dyad-level variation
+  overall_average <- fixef(model)[1]
+
+  return(list(similarities_by_dyad = all_similarities, overall_average = overall_average))
+}
+
+## ----sentiment_similarity, message=FALSE--------------------------------------
+sentiment_sim <- sentiment_sim_dyads(processed_convs, window_size = 3)
+
+## ----echo=FALSE---------------------------------------------------------------
+participant_sim_dyads <- function(conversations) {
+  dyads <- unique(conversations$dyad_id)
+  all_similarities <- list()
+
+  for (dyad in dyads) {
+    dyad_conv <- conversations[conversations$dyad_id == dyad, ]
+    speakers <- table(dyad_conv$speaker) / nrow(dyad_conv)
+
+    # Calculate entropy as a measure of speaker balance
+    entropy <- -sum(speakers * log(speakers))
+    max_entropy <- -log(1/length(speakers))
+
+    # Normalize entropy to [0, 1] range
+    similarity <- entropy / max_entropy
+
+    all_similarities[[as.character(dyad)]] <- similarity
+  }
+
+  # Calculate overall average using simple mean
+  overall_average <- mean(unlist(all_similarities))
+
+  # Print warning about not using multilevel modeling
+  warning("Only one observation per dyad. Using simple mean for overall average instead of multilevel modeling.")
+
+  return(list(similarities_by_dyad = all_similarities, overall_average = overall_average))
+}
+
+## ----participant_similarity, message=FALSE, warning=FALSE---------------------
+participant_sim <- participant_sim_dyads(processed_convs)
+
+## ----echo=FALSE---------------------------------------------------------------
+timing_sim_dyads <- function(conversations) {
+  dyads <- unique(conversations$dyad_id)
+  all_similarities <- list()
+
+  for (dyad in dyads) {
+    dyad_conv <- conversations[conversations$dyad_id == dyad, ]
+    turn_lengths <- nchar(dyad_conv$processed_text)
+
+    length_sim <- 1 - stats::sd(turn_lengths) / mean(turn_lengths)
+
+    # Calculate rhythm similarity based on turn length differences
+    rhythm_diffs <- diff(turn_lengths)
+    rhythm_sim <- 1 - stats::sd(rhythm_diffs) / mean(abs(rhythm_diffs))
+
+    similarity <- mean(c(length_sim, rhythm_sim))
+    all_similarities[[as.character(dyad)]] <- similarity
+  }
+
+  # Calculate overall average using simple mean
+  overall_average <- mean(unlist(all_similarities))
+
+  # Print warning about not using multilevel modeling
+  warning("Only one observation per dyad. Using simple mean for overall average instead of multilevel modeling.")
+
+  return(list(similarities_by_dyad = all_similarities, overall_average = overall_average))
+}
+
+## ----timing_similarity, message=FALSE-----------------------------------------
+timing_sim <- timing_sim_dyads(processed_convs)
+
+## ----visualization, fig.show='hide'-------------------------------------------
+topic_sim_df <- data.frame(
+  dyad = rep(names(topic_sim$similarities_by_dyad), 
+             sapply(topic_sim$similarities_by_dyad, length)),
+  similarity = unlist(topic_sim$similarities_by_dyad),
+  index = unlist(lapply(topic_sim$similarities_by_dyad, seq_along))
+)
+
+ggplot(topic_sim_df, aes(x = index, y = similarity, color = dyad)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~dyad, ncol = 2) +
+  labs(title = "Topic Similarity Across Dyads",
+       x = "Conversation Sequence",
+       y = "Similarity Score") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+## ----echo=FALSE, out.height='2000px', out.width='800px'-----------------------
+knitr::include_graphics("../man/figures/dyadconv_plot.jpeg")
+
+## ----comparison, fig.width=10, fig.height=6-----------------------------------
+comparison_df <- data.frame(
+  dyad = names(topic_sim$similarities_by_dyad),
+  topic = sapply(topic_sim$similarities_by_dyad, mean),
+  lexical = sapply(lexical_sim$similarities_by_dyad, mean),
+  semantic = sapply(semantic_sim$similarities_by_dyad, mean),
+  structural = unlist(structural_sim$similarities_by_dyad),
+  stylistic = sapply(stylistic_sim$similarities_by_dyad, mean),
+  sentiment = sapply(sentiment_sim$similarities_by_dyad, mean),
+  participant = unlist(participant_sim$similarities_by_dyad),
+  timing = unlist(timing_sim$similarities_by_dyad)
+)
+
+comparison_long <- reshape(comparison_df, 
+                           varying = list(names(comparison_df)[names(comparison_df) != "dyad"]),
+                           v.names = "similarity",
+                           timevar = "measure",
+                           times = names(comparison_df)[names(comparison_df) != "dyad"],
+                           new.row.names = 1:10000, # Adjust this if needed
+                           direction = "long")
+
+ggplot(comparison_long, aes(x = measure, y = similarity, fill = measure)) +
+  geom_boxplot() +
+  labs(title = "Comparison of Similarity Measures Across Dyads",
+       x = "Similarity Measure",
+       y = "Similarity Score") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
